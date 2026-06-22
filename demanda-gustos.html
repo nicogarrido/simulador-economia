@@ -44,28 +44,24 @@ const valor = document.getElementById("valor");
 const mensaje = document.getElementById("mensaje");
 const interpretacion = document.getElementById("interpretacion");
 
-// Área del gráfico
-const left = 90;
-const right = 760;
-const top = 55;
-const bottom = 440;
+const chartLeft = 90;
+const chartRight = 760;
+const chartTop = 55;
+const chartBottom = 440;
 const maxQ = 100;
 const maxP = 100;
 
-// Funciones base:
-// Demanda: P = a - bQ
-// Oferta:  P = c + dQ
 const b = 0.7;
 const c = 15;
 const d = 0.55;
 const a0 = 85;
 
 function xQ(q) {
-  return left + (q / maxQ) * (right - left);
+  return chartLeft + (q / maxQ) * (chartRight - chartLeft);
 }
 
 function yP(p) {
-  return bottom - (p / maxP) * (bottom - top);
+  return chartBottom - (p / maxP) * (chartBottom - chartTop);
 }
 
 function equilibrio(a) {
@@ -79,16 +75,16 @@ function dibujarEjes() {
   ctx.lineWidth = 2;
 
   ctx.beginPath();
-  ctx.moveTo(left, bottom);
-  ctx.lineTo(right, bottom);
-  ctx.moveTo(left, bottom);
-  ctx.lineTo(left, top);
+  ctx.moveTo(chartLeft, chartBottom);
+  ctx.lineTo(chartRight, chartBottom);
+  ctx.moveTo(chartLeft, chartBottom);
+  ctx.lineTo(chartLeft, chartTop);
   ctx.stroke();
 
   ctx.fillStyle = "#111827";
   ctx.font = "16px Arial";
-  ctx.fillText("Cantidad", right - 70, bottom + 35);
-  ctx.fillText("Precio", left - 65, top + 10);
+  ctx.fillText("Cantidad", chartRight - 70, chartBottom + 35);
+  ctx.fillText("Precio", chartLeft - 65, chartTop + 10);
 
   ctx.font = "12px Arial";
   ctx.strokeStyle = "#d1d5db";
@@ -99,12 +95,12 @@ function dibujarEjes() {
     const x = xQ(q);
 
     ctx.beginPath();
-    ctx.moveTo(x, bottom);
-    ctx.lineTo(x, top);
+    ctx.moveTo(x, chartBottom);
+    ctx.lineTo(x, chartTop);
     ctx.stroke();
 
     ctx.fillStyle = "#4b5563";
-    ctx.fillText(q, x - 8, bottom + 18);
+    ctx.fillText(q, x - 8, chartBottom + 18);
   }
 
   for (let i = 0; i <= 5; i++) {
@@ -112,16 +108,16 @@ function dibujarEjes() {
     const y = yP(p);
 
     ctx.beginPath();
-    ctx.moveTo(left, y);
-    ctx.lineTo(right, y);
+    ctx.moveTo(chartLeft, y);
+    ctx.lineTo(chartRight, y);
     ctx.stroke();
 
     ctx.fillStyle = "#4b5563";
-    ctx.fillText(p, left - 30, y + 4);
+    ctx.fillText(p, chartLeft - 30, y + 4);
   }
 }
 
-function dibujarRectaDemanda(a, color, etiqueta, grosor = 3) {
+function dibujarRectaDemanda(a, color, etiqueta, grosor) {
   ctx.strokeStyle = color;
   ctx.lineWidth = grosor;
   ctx.beginPath();
@@ -172,17 +168,17 @@ function dibujarPunto(eq, color, etiqueta) {
   ctx.setLineDash([5, 5]);
   ctx.beginPath();
   ctx.moveTo(x, y);
-  ctx.lineTo(x, bottom);
+  ctx.lineTo(x, chartBottom);
   ctx.moveTo(x, y);
-  ctx.lineTo(left, y);
+  ctx.lineTo(chartLeft, y);
   ctx.stroke();
   ctx.setLineDash([]);
 
   ctx.fillStyle = color;
   ctx.font = "14px Arial";
   ctx.fillText(etiqueta, x + 8, y - 8);
-  ctx.fillText("Q=" + eq.q.toFixed(1), x - 22, bottom + 35);
-  ctx.fillText("P=" + eq.p.toFixed(1), left - 70, y + 5);
+  ctx.fillText("Q=" + eq.q.toFixed(1), x - 22, chartBottom + 35);
+  ctx.fillText("P=" + eq.p.toFixed(1), chartLeft - 70, y + 5);
 }
 
 function dibujarFlecha(eq0, eq1) {
@@ -232,9 +228,6 @@ function dibujar() {
   } else {
     dibujarPunto(eq0, "#2563eb", "E₀");
   }
-
-  ctx.fillStyle = "#111827";
-  ctx.font = "17px Arial";
 
   if (cambio > 0) {
     mensaje.innerHTML = "<strong>Aumentan los gustos:</strong> la demanda se desplaza hacia la derecha.";
