@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Demanda y cambios en los gustos</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    color: #1f2937;
+  }
+
+  .contenedor {
+    max-width: 850px;
+    margin: auto;
+  }
+
+  canvas {
+    border: 1px solid #ccc;
+    width: 100%;
+    max-width: 760px;
+    height: auto;
+    background: #fff;
+  }
+
+  .control {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f3f4f6;
+    border-radius: 8px;
+  }
+
+  input[type="range"] {
+    width: 100%;
+  }
+
+  .mensaje {
+    font-weight: bold;
+    margin-top: 10px;
+  }
+</style>
+</head>
+
+<body>
+<div class="contenedor">
+  <h2>Cambios en los gustos y desplazamiento de la demanda</h2>
+
+  <p>
+    Mueve el control para observar cómo cambia la demanda cuando los consumidores
+    valoran más o menos un producto.
+  </p>
+
+  <div class="control">
+    <label for="gusto">Cambio en los gustos:</label>
+    <input type="range" id="gusto" min="-120" max="120" value="0">
+    <p>Valor: <span id="valor">0</span></p>
+    <p class="mensaje" id="mensaje">La demanda se mantiene en su posición original.</p>
+  </div>
+
+  <canvas id="grafico" width="760" height="480"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById("grafico");
+const ctx = canvas.getContext("2d");
+const slider = document.getElementById("gusto");
+const valor = document.getElementById("valor");
+const mensaje = document.getElementById("mensaje");
+
+function dibujar(shift) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Ejes
+  ctx.strokeStyle = "#111827";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(90, 400);
+  ctx.lineTo(700, 400);
+  ctx.moveTo(90, 400);
+  ctx.lineTo(90, 60);
+  ctx.stroke();
+
+  // Etiquetas ejes
+  ctx.fillStyle = "#111827";
+  ctx.font = "16px Arial";
+  ctx.fillText("Cantidad", 625, 430);
+  ctx.fillText("Precio", 35, 75);
+
+  // Demanda original
+  ctx.strokeStyle = "#2563eb";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(180, 110);
+  ctx.lineTo(560, 350);
+  ctx.stroke();
+
+  ctx.fillStyle = "#2563eb";
+  ctx.font = "18px Arial";
+  ctx.fillText("D₀", 570, 350);
+
+  // Demanda desplazada
+  ctx.strokeStyle = "#dc2626";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(180 + shift, 110);
+  ctx.lineTo(560 + shift, 350);
+  ctx.stroke();
+
+  ctx.fillStyle = "#dc2626";
+  ctx.fillText("D₁", 570 + shift, 350);
+
+  // Flecha de desplazamiento
+  ctx.strokeStyle = "#374151";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(370, 230);
+  ctx.lineTo(370 + shift, 230);
+  ctx.stroke();
+
+  if (shift !== 0) {
+    ctx.beginPath();
+    if (shift > 0) {
+      ctx.moveTo(370 + shift, 230);
+      ctx.lineTo(360 + shift, 224);
+      ctx.moveTo(370 + shift, 230);
+      ctx.lineTo(360 + shift, 236);
+    } else {
+      ctx.moveTo(370 + shift, 230);
+      ctx.lineTo(380 + shift, 224);
+      ctx.moveTo(370 + shift, 230);
+      ctx.lineTo(380 + shift, 236);
+    }
+    ctx.stroke();
+  }
+
+  // Mensaje del gráfico
+  ctx.fillStyle = "#111827";
+  ctx.font = "16px Arial";
+
+  if (shift > 0) {
+    ctx.fillText("Aumentan los gustos: la demanda se desplaza a la derecha.", 150, 35);
+    mensaje.textContent = "Aumentan los gustos: a cada precio, los consumidores quieren comprar más.";
+  } else if (shift < 0) {
+    ctx.fillText("Disminuyen los gustos: la demanda se desplaza a la izquierda.", 150, 35);
+    mensaje.textContent = "Disminuyen los gustos: a cada precio, los consumidores quieren comprar menos.";
+  } else {
+    ctx.fillText("Demanda original.", 310, 35);
+    mensaje.textContent = "La demanda se mantiene en su posición original.";
+  }
+}
+
+slider.addEventListener("input", function() {
+  const shift = Number(slider.value);
+  valor.textContent = shift;
+  dibujar(shift);
+});
+
+dibujar(0);
+</script>
+</body>
+</html>
