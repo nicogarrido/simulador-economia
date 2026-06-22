@@ -1,2 +1,2 @@
 # simulador-economia
-La prueba de mi simulador en economía
+La prueba de simuladores integrados en Canvas
