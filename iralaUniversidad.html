@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Universidad y Costo de Oportunidad — EpT</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #EAE6DF;
+  --hero:    #131A2E;
+  --gold:    #EFA820;
+  --green:   #059669;
+  --card:    #FFFFFF;
+  --text:    #181818;
+  --muted:   #6B7280;
+  --border:  #DDD8CF;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  padding: 32px 16px 48px;
+}
+
+.wrap {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── BADGE ─────────────────────────────────────────── */
+.badge-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #FEF3C7;
+  color: #92400E;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+}
+
+/* ── HERO ──────────────────────────────────────────── */
+.hero {
+  background: var(--hero);
+  border-radius: 20px;
+  padding: 36px 32px 32px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 280px; height: 280px;
+  background: var(--gold);
+  border-radius: 50%;
+  top: -90px; right: -90px;
+  opacity: 0.06;
+  pointer-events: none;
+}
+.hero-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(21px, 4.2vw, 30px);
+  font-weight: 800;
+  line-height: 1.22;
+  margin-bottom: 12px;
+}
+.hero h1 em {
+  color: var(--gold);
+  font-style: normal;
+}
+.hero-sub {
+  font-size: 14px;
+  color: #9CA3AF;
+  line-height: 1.6;
+  margin-bottom: 26px;
+}
+.questions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.q-item {
+  background: rgba(255,255,255,0.055);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 10px 10px 0;
+  padding: 12px 16px;
+}
+.q-item .q-pre {
+  font-size: 12px;
+  color: #9CA3AF;
+  margin-bottom: 4px;
+}
+.q-item .q-main {
+  font-size: 15px;
+  font-weight: 600;
+  color: #F9FAFB;
+  line-height: 1.4;
+}
+
+/* ── SECTION LABEL ─────────────────────────────────── */
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0 2px;
+}
+
+/* ── PATHS CARD ────────────────────────────────────── */
+.paths-card {
+  background: var(--card);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.path-row {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.path-row:last-child { border-bottom: none; }
+
+.path-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.path-emoji { font-size: 22px; margin-top: 1px; flex-shrink: 0; }
+.path-info  { flex: 1; min-width: 0; }
+.path-name  { font-size: 14px; font-weight: 600; color: var(--text); }
+.path-desc  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.path-amount {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+  margin-top: 1px;
+}
+.path-amount.media { color: #64748B; }
+.path-amount.tech  { color: #0284C7; }
+.path-amount.uni   { color: #059669; }
+
+.bar-track {
+  height: 7px;
+  background: #F0EDE8;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  width: 0;
+  transition: width 1s cubic-bezier(.4,0,.2,1);
+}
+.bar-fill.media { background: #94A3B8; }
+.bar-fill.tech  { background: #38BDF8; }
+.bar-fill.uni   { background: #10B981; }
+
+/* ── DIFF BANNER ───────────────────────────────────── */
+.diff {
+  background: linear-gradient(135deg, #064E3B 0%, #065F46 100%);
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.diff-icon { font-size: 32px; flex-shrink: 0; }
+.diff-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6EE7B7;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.diff-number {
+  font-family: 'Syne', sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+.diff-note {
+  font-size: 12px;
+  color: #A7F3D0;
+  margin-top: 4px;
+}
+
+/* ── TWO CARDS ─────────────────────────────────────── */
+.two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 460px) { .two-cols { grid-template-columns: 1fr; } }
+
+.info-card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+.info-card.bordered {
+  border: 2px solid var(--gold);
+  background: #FEFAEF;
+}
+.info-card-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.info-card p {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text);
+}
+.info-card strong { color: var(--text); }
+
+/* ── REFLEXIÓN ─────────────────────────────────────── */
+.reflexion {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 24px 26px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+.reflexion-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+.reflexion-item {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.reflexion-item:last-child { margin-bottom: 0; }
+.dot {
+  width: 8px; height: 8px;
+  background: var(--gold);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.reflexion-item p {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.65;
+}
+
+/* ── FOOTER NOTE ───────────────────────────────────── */
+.foot {
+  font-size: 11px;
+  color: #AAA;
+  text-align: center;
+  padding: 2px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- BADGE -->
+  <div class="badge-bar">
+    <span class="badge">⚠️ Datos ficticios · reemplazar con datos reales de Chile</span>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">Costo de Oportunidad · Aplicación</div>
+    <h1>¿Vale la pena usar <em>años de tu vida</em><br>en la universidad?</h1>
+    <p class="hero-sub">Estudiar ocupa tiempo hoy, pero puede cambiar tus oportunidades futuras.</p>
+    <div class="questions">
+      <div class="q-item">
+        <div class="q-pre">La pregunta económica no es solo:</div>
+        <div class="q-main">«¿Me gusta estudiar?»</div>
+      </div>
+      <div class="q-item">
+        <div class="q-pre">También es:</div>
+        <div class="q-main">«¿Qué gano y qué sacrifico si uso mi tiempo en la universidad?»</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PATHS -->
+  <div class="section-label">Tres caminos posibles · ingreso mensual promedio estimado</div>
+  <div class="paths-card">
+
+    <div class="path-row">
+      <div class="path-top">
+        <div class="path-emoji">🎒</div>
+        <div class="path-info">
+          <div class="path-name">Educación media completa</div>
+          <div class="path-desc">Entrar antes al mercado laboral</div>
+        </div>
+        <div class="path-amount media">$550.000</div>
+      </div>
+      <div class="bar-track"><div class="bar-fill media" data-w="46"></div></div>
+    </div>
+
+    <div class="path-row">
+      <div class="path-top">
+        <div class="path-emoji">🛠️</div>
+        <div class="path-info">
+          <div class="path-name">Educación técnico-profesional</div>
+          <div class="path-desc">Estudios más cortos, entrada laboral relativamente rápida</div>
+        </div>
+        <div class="path-amount tech">$750.000</div>
+      </div>
+      <div class="bar-track"><div class="bar-fill tech" data-w="63"></div></div>
+    </div>
+
+    <div class="path-row">
+      <div class="path-top">
+        <div class="path-emoji">🎓</div>
+        <div class="path-info">
+          <div class="path-name">Educación universitaria completa</div>
+          <div class="path-desc">Mayor inversión de tiempo antes de trabajar a tiempo completo</div>
+        </div>
+        <div class="path-amount uni">$1.200.000</div>
+      </div>
+      <div class="bar-track"><div class="bar-fill uni" data-w="100"></div></div>
+    </div>
+
+  </div>
+
+  <!-- DIFF BANNER -->
+  <div class="diff">
+    <div class="diff-icon">📈</div>
+    <div>
+      <div class="diff-label">Universidad vs. educación media</div>
+      <div class="diff-number">+$650.000 al mes</div>
+      <div class="diff-note">diferencia estimada en ingreso mensual promedio</div>
+    </div>
+  </div>
+
+  <!-- TWO CARDS -->
+  <div class="two-cols">
+    <div class="info-card">
+      <div class="info-card-label">La idea económica</div>
+      <p>Ir a la universidad puede verse como una <strong>inversión de tiempo</strong>. Durante esos años podrías trabajar, ganar experiencia o recibir ingresos. Eso es parte del <strong>costo de oportunidad</strong>.</p>
+    </div>
+    <div class="info-card bordered">
+      <div class="info-card-label">Pregunta clave</div>
+      <p>¿La universidad es un <strong>gasto</strong>, una <strong>inversión</strong>, o una mezcla de ambas?</p>
+    </div>
+  </div>
+
+  <!-- REFLEXIÓN -->
+  <div class="reflexion">
+    <div class="reflexion-title">💭 Para pensar</div>
+    <div class="reflexion-item">
+      <div class="dot"></div>
+      <p>Si decides estudiar en la universidad, ¿qué estás <strong>sacrificando hoy</strong>?</p>
+    </div>
+    <div class="reflexion-item">
+      <div class="dot"></div>
+      <p>Y si decides no estudiar, ¿qué <strong>oportunidades futuras</strong> podrías estar dejando pasar?</p>
+    </div>
+  </div>
+
+  <!-- FOOT -->
+  <p class="foot">Fuente: datos ficticios para actividad de aula · reemplazar con estadísticas reales de Chile</p>
+
+</div>
+
+<script>
+  // Animate bars on load
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.querySelectorAll('.bar-fill').forEach(bar => {
+        bar.style.width = bar.dataset.w + '%';
+      });
+    }, 200);
+  });
+</script>
+</body>
+</html>
