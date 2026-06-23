@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Simulador: Restricción de 24 horas</title>
+<style>
+body{font-family:Arial,sans-serif;margin:20px;color:#1f2937;background:#f8fafc}
+.box{max-width:920px;margin:auto;background:white;border:1px solid #ddd;border-radius:14px;padding:24px}
+.card{background:#f3f4f6;border-radius:12px;padding:14px;margin:12px 0}
+input[type=range]{width:100%}
+textarea{width:100%;min-height:90px;border-radius:10px;border:1px solid #ccc;padding:10px;font-family:Arial}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.stat{background:#eef6ff;border-radius:12px;padding:12px;text-align:center}
+.big{font-size:28px;font-weight:bold}
+.ok{color:#16a34a}.warn{color:#dc2626}.mid{color:#ca8a04}
+canvas{width:100%;max-width:850px;border:1px solid #ddd;border-radius:10px;background:white;margin-top:15px}
+button{padding:10px 14px;border-radius:8px;border:1px solid #ccc;cursor:pointer;margin-top:10px}
+button:hover{background:#e5e7eb}
+</style>
+</head>
+
+<body>
+<div class="box">
+<h2>🎮 Misión: arregla tu día de 24 horas</h2>
+
+<p>
+Tu día parte con demasiadas actividades. El problema económico es que tienes una
+<strong>restricción de tiempo</strong>: solo existen 24 horas. Ajusta tu día quitando horas.
+</p>
+
+<div class="stats">
+  <div class="stat"><div>Horas usadas</div><div class="big" id="usadas">0</div></div>
+  <div class="stat"><div>Horas disponibles</div><div class="big">24</div></div>
+  <div class="stat"><div>Diferencia</div><div class="big" id="diferencia">0</div></div>
+  <div class="stat"><div>Estado</div><div class="big" id="estado">😵</div></div>
+</div>
+
+<div id="controles"></div>
+
+<canvas id="grafico" width="850" height="360"></canvas>
+
+<div class="card" id="mensaje"></div>
+
+<div class="card">
+  <h3>🧠 Reflexión obligatoria</h3>
+  <p>
+    Para cumplir la restricción de 24 horas, ¿qué actividad decidiste sacrificar?
+    ¿Cuál fue tu costo de oportunidad?
+  </p>
+  <textarea id="reflexion" placeholder="Ejemplo: quité 2 horas de redes sociales para estudiar más. Mi costo de oportunidad fue tener menos tiempo de entretención..."></textarea>
+  <button onclick="verificarReflexion()">Verificar reflexión</button>
+  <p id="feedbackReflexion"></p>
+</div>
+
+<div class="card">
+  <h3>Concepto clave</h3>
+  <p>
+    La restricción muestra lo que es posible. El costo de oportunidad muestra
+    aquello a lo que renuncias cuando eliges una alternativa.
+  </p>
+</div>
+</div>
+
+<script>
+const actividades = [
+  {id:"dormir", nombre:"😴 Dormir", valor:9, color:"#2563eb"},
+  {id:"estudiar", nombre:"📚 Estudiar", valor:7, color:"#7c3aed"},
+  {id:"trabajar", nombre:"💼 Trabajar", valor:6, color:"#16a34a"},
+  {id:"transporte", nombre:"🚌 Transporte", valor:3, color:"#f97316"},
+  {id:"ocio", nombre:"🎧 Ocio / amigos", valor:4, color:"#dc2626"},
+  {id:"redes", nombre:"📱 Redes sociales", valor:2, color:"#0891b2"}
+];
+
+const controles = document.getElementById("controles");
+
+actividades.forEach(a=>{
+  controles.innerHTML += `
+  <div class="card">
+    <label><strong>${a.nombre}</strong>: <span id="${a.id}Valor">${a.valor}</span> horas</label>
+    <input type="range" min="0" max="12" step="1" value="${a.valor}" id="${a.id}">
+  </div>`;
+});
+
+const canvas = document.getElementById("grafico");
+const ctx = canvas.getContext("2d");
+
+function calcular(){
+  let total = 0;
+  let datos = {};
+
+  actividades.forEach(a=>{
+    const v = Number(document.getElementById(a.id).value);
+    datos[a.id] = v;
+    document.getElementById(a.id+"Valor").textContent = v;
+    total += v;
+  });
+
+  const diferencia = 24 - total;
+
+  document.getElementById("usadas").textContent = total;
+  document.getElementById("diferencia").textContent = diferencia;
+
+  const estado = document.getElementById("estado");
+  const mensaje = document.getElementById("mensaje");
+
+  if(total > 24){
+    estado.textContent = "😵";
+    estado.className = "big warn";
+    mensaje.innerHTML =
+      "<strong>Restricción incumplida:</strong> estás usando " + total +
+      " horas. Debes quitar <strong>" + (total - 24) +
+      " horas</strong> para que tu día sea posible.";
+  } else if(total === 24){
+    estado.textContent = "😎";
+    estado.className = "big ok";
+    mensaje.innerHTML =
+      "<strong>Restricción cumplida:</strong> usaste exactamente 24 horas. Ahora explica qué sacrificaste.";
+  } else {
+    estado.textContent = "🙂";
+    estado.className = "big mid";
+    mensaje.innerHTML =
+      "<strong>Restricción cumplida:</strong> usaste menos de 24 horas. Te quedan " +
+      (24 - total) + " horas libres. Ahora explica tu costo de oportunidad.";
+  }
+
+  dibujar(datos,total);
+}
+
+function dibujar(datos,total){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  ctx.fillStyle="#111827";
+  ctx.font="18px Arial";
+  ctx.fillText("Distribución del día", 30, 35);
+
+  let x = 30;
+  const y = 90;
+  const alto = 70;
+  const escala = 780 / 24;
+
+  actividades.forEach(a=>{
+    const ancho = datos[a.id] * escala;
+    ctx.fillStyle = a.color;
+    ctx.fillRect(x,y,ancho,alto);
+
+    if(datos[a.id] > 0){
+      ctx.fillStyle = "white";
+      ctx.font = "13px Arial";
+      ctx.fillText(datos[a.id]+"h", x + 8, y + 42);
+    }
+    x += ancho;
+  });
+
+  ctx.strokeStyle = total > 24 ? "#dc2626" : "#16a34a";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(30,y,780,alto);
+
+  ctx.strokeStyle = "#111827";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(810, y - 20);
+  ctx.lineTo(810, y + alto + 20);
+  ctx.stroke();
+
+  ctx.fillStyle = "#111827";
+  ctx.font = "14px Arial";
+  ctx.fillText("Límite: 24 horas", 700, y - 28);
+
+  let leyY = 210;
+  actividades.forEach((a,i)=>{
+    const lx = 40 + (i%2)*380;
+    const ly = leyY + Math.floor(i/2)*35;
+    ctx.fillStyle = a.color;
+    ctx.fillRect(lx,ly,18,18);
+    ctx.fillStyle="#111827";
+    ctx.fillText(a.nombre, lx+28, ly+14);
+  });
+
+  ctx.font="16px Arial";
+  if(total > 24){
+    ctx.fillStyle="#dc2626";
+    ctx.fillText("⚠ No factible: estás fuera de la restricción de 24 horas.", 30, 330);
+  } else {
+    ctx.fillStyle="#16a34a";
+    ctx.fillText("✅ Factible: tu elección respeta la restricción de tiempo.", 30, 330);
+  }
+}
+
+function verificarReflexion(){
+  const texto = document.getElementById("reflexion").value.trim();
+  const feedback = document.getElementById("feedbackReflexion");
+
+  if(texto.length < 40){
+    feedback.innerHTML = "⚠️ Escribe una reflexión un poco más completa. Debe mencionar qué sacrificaste y cuál fue tu costo de oportunidad.";
+    feedback.className = "warn";
+  } else {
+    feedback.innerHTML = "✅ Buena reflexión. Estás conectando elección, restricción y costo de oportunidad.";
+    feedback.className = "ok";
+  }
+}
+
+actividades.forEach(a=>{
+  document.getElementById(a.id).addEventListener("input", calcular);
+});
+
+calcular();
+</script>
+</body>
+</html>
