@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Sábado de 24 Horas — EpT</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; min-height: 100vh; padding: 24px 16px 40px; }
+  .container { max-width: 520px; margin: 0 auto; }
+
+  /* HEADER */
+  .header { text-align: center; margin-bottom: 22px; }
+  .header-icon { font-size: 40px; margin-bottom: 8px; }
+  .header h1 { font-size: 22px; font-weight: 700; color: #0f172a; }
+  .header p { font-size: 13px; color: #64748b; margin-top: 6px; line-height: 1.55; min-height: 36px; }
+
+  /* BAR CARD */
+  .bar-card { background: white; border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .bar-track { height: 13px; border-radius: 999px; background: #f1f5f9; overflow: hidden; display: flex; margin-bottom: 10px; }
+  .bar-seg { height: 100%; transition: width 0.2s ease; }
+  .bar-over { background: #fca5a5; animation: blinkRed 1s infinite; }
+  @keyframes blinkRed { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .bar-row { display: flex; justify-content: space-between; align-items: center; }
+  .bar-label { font-size: 13px; color: #64748b; }
+  .bar-num { font-size: 17px; font-weight: 700; transition: color 0.3s; color: #0f172a; }
+  .bar-num.over { color: #ef4444; }
+  .bar-num.exact { color: #16a34a; }
+  .bar-msg { font-size: 12px; font-weight: 600; text-align: center; margin-top: 8px; padding: 6px 10px; border-radius: 8px; display: none; }
+  .bar-msg.cut { color: #dc2626; background: #fef2f2; display: block; }
+  .bar-msg.good { color: #16a34a; background: #f0fdf4; display: block; }
+
+  /* ACTIVITY LIST */
+  .act-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .act-card {
+    background: white; border-radius: 12px; padding: 11px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 2px solid #e2e8f0; transition: border-color 0.2s, opacity 0.2s;
+  }
+  .act-card.active { border-color: var(--c); }
+  .act-card.faded { opacity: 0.38; }
+  .act-info { display: flex; align-items: center; gap: 10px; }
+  .act-emoji { font-size: 20px; line-height: 1; }
+  .act-name { font-size: 14px; font-weight: 500; color: #1e293b; }
+  .act-sub { font-size: 11px; color: #f59e0b; margin-top: 1px; }
+  .act-ctrl { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+  .btn-adj {
+    width: 30px; height: 30px; border-radius: 50%; border: none;
+    font-size: 20px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1; padding-bottom: 2px;
+    transition: background 0.15s;
+  }
+  .btn-minus { background: #fee2e2; color: #ef4444; }
+  .btn-minus:disabled { background: #f8fafc; color: #d1d5db; cursor: default; }
+  .btn-plus { background: #dcfce7; color: #16a34a; }
+  .btn-plus:disabled { background: #f8fafc; color: #d1d5db; cursor: not-allowed; }
+  .act-hours { font-size: 15px; font-weight: 700; min-width: 32px; text-align: center; transition: color 0.2s; }
+
+  /* BUTTONS */
+  .cta {
+    display: block; width: 100%; padding: 14px; border-radius: 12px; border: none;
+    font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 8px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .cta:active { transform: scale(0.98); }
+  .cta-primary { background: #0f172a; color: white; }
+  .cta-secondary { background: white; color: #64748b; border: 2px solid #e2e8f0; }
+  .hidden { display: none !important; }
+
+  /* REFLECT */
+  .reflect { display: flex; flex-direction: column; gap: 14px; }
+  .insight { background: #0f172a; border-radius: 16px; padding: 22px 20px; color: white; }
+  .insight-icon { font-size: 32px; margin-bottom: 10px; }
+  .insight h2 { font-size: 16px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
+  .insight p { color: #94a3b8; font-size: 13px; line-height: 1.65; }
+  .insight p strong { color: white; }
+  .quote { margin-top: 14px; padding: 12px 14px; background: #1e293b; border-radius: 10px; }
+  .quote p { color: #e2e8f0; font-size: 13px; font-style: italic; }
+  .quote span { display: block; color: #64748b; font-size: 11px; margin-top: 4px; }
+
+  .rcard { background: white; border-radius: 14px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .rlabel { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 12px; }
+  .rlabel.g { color: #16a34a; }
+  .rlabel.r { color: #dc2626; }
+  .rlabel.b { color: #1d4ed8; }
+  .rrow { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
+  .rrow:last-child { margin-bottom: 0; }
+  .rname { font-size: 14px; color: #334155; }
+  .rname.strike { color: #94a3b8; text-decoration: line-through; }
+  .rval { font-size: 13px; font-weight: 700; white-space: nowrap; }
+
+  .opp { background: #eff6ff; border-radius: 14px; padding: 16px 18px; border: 1px solid #bfdbfe; }
+  .eco { background: #f0fdf4; border-radius: 14px; padding: 16px 18px; border: 1px solid #bbf7d0; color: #166534; font-size: 13px; line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-icon">⏰</div>
+    <h1>El Sábado de 24 Horas</h1>
+    <p id="subtitle">Diseña tu sábado ideal. Asigna horas libremente a todo lo que quisieras hacer.</p>
+  </div>
+
+  <div class="bar-card" id="bar-section">
+    <div class="bar-track" id="bar-track"></div>
+    <div class="bar-row">
+      <span class="bar-label">Horas planificadas</span>
+      <span class="bar-num" id="bar-num">0h</span>
+    </div>
+    <p class="bar-msg" id="bar-msg"></p>
+  </div>
+
+  <div class="act-list" id="act-list"></div>
+
+  <button class="cta cta-primary hidden" id="btn-reveal" onclick="reveal()">Ver cuánto tiempo tengo en realidad →</button>
+  <button class="cta cta-primary hidden" id="btn-reflect" onclick="goReflect()">Ver qué aprendí →</button>
+
+  <div class="reflect hidden" id="reflect-view"></div>
+
+</div>
+
+<script>
+const ACTS = [
+  { id:1,  name:"Dormir",                emoji:"😴", clr:"#818cf8" },
+  { id:2,  name:"Comer y cocinar",       emoji:"🍽️", clr:"#fbbf24" },
+  { id:3,  name:"Higiene / Autocuidado", emoji:"🛁", clr:"#22d3ee" },
+  { id:4,  name:"Estudiar / Trabajo",    emoji:"📚", clr:"#60a5fa" },
+  { id:5,  name:"Deporte / Ejercicio",   emoji:"🏋️", clr:"#34d399" },
+  { id:6,  name:"Familia y amigos",      emoji:"👫", clr:"#fb923c" },
+  { id:7,  name:"Redes sociales",        emoji:"📱", clr:"#f472b6" },
+  { id:8,  name:"Series / Películas",    emoji:"🎬", clr:"#a78bfa" },
+  { id:9,  name:"Videojuegos",           emoji:"🎮", clr:"#2dd4bf" },
+  { id:10, name:"Lectura por placer",    emoji:"📖", clr:"#84cc16" },
+  { id:11, name:"Hobbies / Creatividad", emoji:"🎨", clr:"#f87171" },
+  { id:12, name:"Transporte / Trámites", emoji:"🚗", clr:"#a8a29e" },
+];
+
+const MAX = 24;
+let hours = Object.fromEntries(ACTS.map(a => [a.id, 0]));
+let snap  = null;
+let phase = "plan";
+
+const $ = id => document.getElementById(id);
+
+function getTotal() { return Object.values(hours).reduce((s,h)=>s+h,0); }
+
+/* ── RENDER ────────────────────────────────────────── */
+function render() {
+  const t = getTotal();
+  const isOver = t > MAX;
+  const surplus = Math.max(0, t - MAX);
+
+  /* bar */
+  const track = $('bar-track');
+  track.innerHTML = '';
+  ACTS.filter(a=>hours[a.id]>0).forEach(a=>{
+    const seg = document.createElement('div');
+    seg.className = 'bar-seg';
+    seg.style.cssText = `width:${(hours[a.id]/Math.max(t,MAX))*100}%;background:${a.clr}`;
+    track.appendChild(seg);
+  });
+  if (isOver) {
+    const ov = document.createElement('div');
+    ov.className = 'bar-seg bar-over';
+    ov.style.flex = '1';
+    track.appendChild(ov);
+  }
+
+  const num = $('bar-num');
+  if (isOver) {
+    num.className = 'bar-num over';
+    num.textContent = `${t}h  (+${surplus}h de más ❌)`;
+  } else if (t === MAX) {
+    num.className = 'bar-num exact';
+    num.textContent = `${t}h  ✓ exacto`;
+  } else {
+    num.className = 'bar-num';
+    num.textContent = t > 0 ? `${t}h / 24h` : '0h';
+  }
+
+  const msg = $('bar-msg');
+  msg.className = 'bar-msg';
+  if (phase === 'cut') {
+    if (isOver) {
+      msg.classList.add('cut');
+      msg.textContent = `Debes eliminar ${surplus} hora${surplus>1?'s':''} de tu plan ☝`;
+    } else {
+      msg.classList.add('good');
+      msg.textContent = `¡Ahora sí cabe en un sábado! 👇`;
+    }
+  }
+
+  /* list */
+  const list = $('act-list');
+  list.innerHTML = '';
+  const locked = phase === 'cut' && t >= MAX;
+
+  ACTS.forEach(a => {
+    const h = hours[a.id];
+    const faded = phase === 'cut' && h === 0;
+    const wasReduced = snap && snap[a.id] > 0 && snap[a.id] !== h;
+    const sub = wasReduced ? `<div class="act-sub">Tenías ${snap[a.id]}h planificadas</div>` : '';
+
+    const card = document.createElement('div');
+    card.className = 'act-card' + (h>0?' active':'') + (faded?' faded':'');
+    if (h > 0) card.style.setProperty('--c', a.clr+'65');
+
+    card.innerHTML = `
+      <div class="act-info">
+        <span class="act-emoji">${a.emoji}</span>
+        <div><div class="act-name">${a.name}</div>${sub}</div>
+      </div>
+      <div class="act-ctrl">
+        <button class="btn-adj btn-minus" onclick="adj(${a.id},-1)" ${h===0?'disabled':''}>−</button>
+        <span class="act-hours" style="color:${h>0?a.clr:'#d1d5db'}">${h}h</span>
+        <button class="btn-adj btn-plus" onclick="adj(${a.id},1)" ${locked?'disabled':''}>+</button>
+      </div>`;
+    list.appendChild(card);
+  });
+
+  /* buttons */
+  $('btn-reveal').classList.toggle('hidden', !(phase==='plan' && t>0));
+  $('btn-reflect').classList.toggle('hidden', !(phase==='cut' && !isOver));
+
+  /* subtitle */
+  const sub = $('subtitle');
+  if (phase==='plan') sub.textContent = 'Diseña tu sábado ideal. Asigna horas libremente a todo lo que quisieras hacer.';
+  else if (phase==='cut') sub.textContent = `Planificaste ${Object.values(snap).reduce((s,h)=>s+h,0)}h, pero un sábado solo tiene 24. Tienes que elegir.`;
+}
+
+function adj(id, d) {
+  if (phase==='cut' && d>0 && getTotal()>=MAX) return;
+  hours[id] = Math.max(0, hours[id]+d);
+  render();
+}
+
+function reveal() {
+  snap = {...hours};
+  if (getTotal() > MAX) { phase='cut'; render(); }
+  else { phase='reflect'; showReflect(); }
+}
+
+function goReflect() { phase='reflect'; showReflect(); }
+
+/* ── REFLECT ───────────────────────────────────────── */
+function showReflect() {
+  $('bar-section').classList.add('hidden');
+  $('act-list').classList.add('hidden');
+  $('btn-reveal').classList.add('hidden');
+  $('btn-reflect').classList.add('hidden');
+  $('subtitle').textContent = 'Esto es lo que elegiste. Ahora veamos qué aprendiste.';
+
+  const kept   = ACTS.filter(a => hours[a.id]>0);
+  const gaveUp = ACTS.filter(a => hours[a.id]===0 && snap && snap[a.id]>0);
+  const reduced= ACTS.filter(a => hours[a.id]>0 && snap && hours[a.id]<snap[a.id]);
+  const never  = ACTS.filter(a => hours[a.id]===0 && (!snap||!snap[a.id]));
+  const top    = [...kept].sort((a,b)=>hours[b.id]-hours[a.id])[0];
+  const didCut = gaveUp.length>0 || reduced.length>0;
+
+  let html = `
+  <div class="insight">
+    <div class="insight-icon">💡</div>
+    <h2>Acabas de experimentar el problema económico fundamental</h2>
+    <p>Tenías un recurso escaso — <strong>24 horas</strong> — y más actividades posibles de las que podías hacer. Tuviste que elegir. Y cada elección significó renunciar a algo. A eso se le llama <strong>costo de oportunidad</strong>.</p>
+    <div class="quote">
+      <p>"Economía es la ciencia que estudia el comportamiento humano como la relación entre fines y medios escasos que tienen usos alternativos."</p>
+      <span>— Lionel Robbins, 1932</span>
+    </div>
+  </div>
+
+  <div class="rcard">
+    <div class="rlabel g">✓ Elegiste dedicar tiempo a</div>
+    ${kept.map(a=>`
+    <div class="rrow">
+      <span class="rname">${a.emoji} ${a.name}</span>
+      <span class="rval" style="color:${a.clr}">${hours[a.id]}h</span>
+    </div>`).join('')}
+  </div>`;
+
+  if (didCut) {
+    html += `
+  <div class="rcard">
+    <div class="rlabel r">✗ Tuviste que renunciar a</div>
+    ${gaveUp.map(a=>`
+    <div class="rrow">
+      <span class="rname strike">${a.emoji} ${a.name}</span>
+      <span class="rval" style="color:#fca5a5">${snap[a.id]}h eliminadas</span>
+    </div>`).join('')}
+    ${reduced.map(a=>`
+    <div class="rrow">
+      <span class="rname" style="color:#94a3b8">${a.emoji} ${a.name}</span>
+      <span class="rval" style="color:#f59e0b">${snap[a.id]}h → ${hours[a.id]}h ↓</span>
+    </div>`).join('')}
+  </div>`;
+  } else if (never.length > 0) {
+    html += `
+  <div class="rcard">
+    <div class="rlabel r">✗ Tampoco elegiste</div>
+    ${never.map(a=>`
+    <div class="rrow">
+      <span class="rname strike">${a.emoji} ${a.name}</span>
+      <span class="rval" style="color:#d1d5db">0h</span>
+    </div>`).join('')}
+  </div>`;
+  }
+
+  if (top) {
+    html += `
+  <div class="opp">
+    <div class="rlabel b">¿Cuál es tu costo de oportunidad?</div>
+    <p style="color:#1e40af;font-size:13px;line-height:1.65">
+      Dedicaste <strong>${hours[top.id]} horas</strong> a «${top.name}». 
+      El <strong>costo de oportunidad</strong> de esa elección es el valor de la mejor 
+      alternativa que sacrificaste para hacerlo posible.
+    </p>
+  </div>`;
+  }
+
+  html += `
+  <div class="eco">
+    <strong>La economía en una frase:</strong> las personas, las empresas y los países 
+    enfrentan el mismo problema que tú en este ejercicio — recursos limitados, 
+    deseos ilimitados, y la necesidad de elegir. Esas elecciones y sus consecuencias 
+    son lo que estudia la economía.
+  </div>
+  <button class="cta cta-secondary" onclick="resetAll()">↺ Intentar de nuevo</button>`;
+
+  const view = $('reflect-view');
+  view.innerHTML = html;
+  view.classList.remove('hidden');
+}
+
+function resetAll() {
+  hours = Object.fromEntries(ACTS.map(a=>[a.id,0]));
+  snap=null; phase='plan';
+  $('bar-section').classList.remove('hidden');
+  $('act-list').classList.remove('hidden');
+  $('reflect-view').classList.add('hidden');
+  $('reflect-view').innerHTML='';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
