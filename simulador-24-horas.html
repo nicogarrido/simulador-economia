@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Simulador: Tu día en 24 horas</title>
+<style>
+body{font-family:Arial,sans-serif;margin:20px;color:#1f2937;background:#f8fafc}
+.box{max-width:900px;margin:auto;background:white;border:1px solid #ddd;border-radius:14px;padding:24px}
+.card{background:#f3f4f6;border-radius:12px;padding:14px;margin:12px 0}
+input[type=range]{width:100%}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.stat{background:#eef6ff;border-radius:12px;padding:12px;text-align:center}
+.big{font-size:28px;font-weight:bold}
+.ok{color:#16a34a}.warn{color:#dc2626}.mid{color:#ca8a04}
+canvas{width:100%;max-width:850px;border:1px solid #ddd;border-radius:10px;background:white;margin-top:15px}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>🎮 Simulador: Tu día en 24 horas</h2>
+<p>
+Distribuye tus 24 horas. Cada hora que asignas a una actividad no puede usarse en otra:
+eso es una restricción y genera costo de oportunidad.
+</p>
+
+<div id="controles"></div>
+
+<div class="stats">
+  <div class="stat"><div>Horas usadas</div><div class="big" id="usadas">0</div></div>
+  <div class="stat"><div>Horas restantes</div><div class="big" id="restantes">24</div></div>
+  <div class="stat"><div>Ingreso diario</div><div class="big" id="ingreso">$0</div></div>
+  <div class="stat"><div>Resultado</div><div class="big" id="estado">🙂</div></div>
+</div>
+
+<canvas id="grafico" width="850" height="360"></canvas>
+
+<div class="card" id="mensaje"></div>
+<div class="card" id="costo"></div>
+</div>
+
+<script>
+const actividades = [
+  {id:"dormir", nombre:"😴 Dormir", valor:8, color:"#2563eb"},
+  {id:"estudiar", nombre:"📚 Estudiar", valor:4, color:"#7c3aed"},
+  {id:"trabajar", nombre:"💼 Trabajar", valor:3, color:"#16a34a"},
+  {id:"transporte", nombre:"🚌 Transporte", valor:2, color:"#f97316"},
+  {id:"ocio", nombre:"🎧 Ocio / amigos", valor:4, color:"#dc2626"},
+  {id:"redes", nombre:"📱 Redes sociales", valor:3, color:"#0891b2"}
+];
+
+const controles = document.getElementById("controles");
+
+actividades.forEach(a=>{
+  controles.innerHTML += `
+  <div class="card">
+    <label><strong>${a.nombre}</strong>: <span id="${a.id}Valor">${a.valor}</span> horas</label>
+    <input type="range" min="0" max="12" step="1" value="${a.valor}" id="${a.id}">
+  </div>`;
+});
+
+const canvas = document.getElementById("grafico");
+const ctx = canvas.getContext("2d");
+
+function calcular(){
+  let total = 0;
+  let datos = {};
+
+  actividades.forEach(a=>{
+    const v = Number(document.getElementById(a.id).value);
+    datos[a.id] = v;
+    document.getElementById(a.id+"Valor").textContent = v;
+    total += v;
+  });
+
+  const restantes = 24 - total;
+  const ingreso = datos.trabajar * 3500;
+
+  document.getElementById("usadas").textContent = total;
+  document.getElementById("restantes").textContent = restantes;
+  document.getElementById("ingreso").textContent = "$" + ingreso.toLocaleString("es-CL");
+
+  let estado = "🙂";
+  let clase = "ok";
+  let mensaje = "";
+
+  if(total > 24){
+    estado = "😵";
+    clase = "warn";
+    mensaje = "Te pasaste de las 24 horas. Tu plan no es posible: la restricción de tiempo se incumple.";
+  } else if(datos.dormir < 6){
+    estado = "🥱";
+    clase = "mid";
+    mensaje = "Puedes hacerlo, pero dormir poco puede afectar tu energía y rendimiento.";
+  } else if(datos.estudiar >= 5 && datos.dormir >= 7 && datos.ocio >= 2){
+    estado = "😎";
+    clase = "ok";
+    mensaje = "Buen equilibrio: estudias, descansas y dejas espacio para ocio.";
+  } else if(datos.trabajar >= 8){
+    estado = "💸";
+    clase = "mid";
+    mensaje = "Sube tu ingreso, pero el costo de oportunidad puede ser menos descanso, estudio u ocio.";
+  } else {
+    estado = "🙂";
+    clase = "ok";
+    mensaje = "Tu día es posible. Ahora piensa: ¿qué actividad estás sacrificando para hacer otra?";
+  }
+
+  const estadoEl = document.getElementById("estado");
+  estadoEl.textContent = estado;
+  estadoEl.className = "big " + clase;
+
+  document.getElementById("mensaje").innerHTML = "<strong>Diagnóstico:</strong> " + mensaje;
+
+  document.getElementById("costo").innerHTML =
+    "<strong>Costo de oportunidad:</strong> si agregas 1 hora a una actividad, debes quitar 1 hora a otra. " +
+    "Por ejemplo, más trabajo puede significar menos estudio, menos sueño o menos ocio.";
+
+  dibujar(datos,total);
+}
+
+function dibujar(datos,total){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  ctx.fillStyle="#111827";
+  ctx.font="18px Arial";
+  ctx.fillText("Distribución de tus 24 horas", 30, 35);
+
+  let x = 30;
+  const y = 90;
+  const alto = 70;
+  const escala = 780 / 24;
+
+  actividades.forEach(a=>{
+    const ancho = datos[a.id] * escala;
+    ctx.fillStyle = a.color;
+    ctx.fillRect(x,y,ancho,alto);
+
+    if(datos[a.id] > 0){
+      ctx.fillStyle = "white";
+      ctx.font = "13px Arial";
+      ctx.fillText(datos[a.id]+"h", x + 8, y + 42);
+    }
+    x += ancho;
+  });
+
+  ctx.strokeStyle = total > 24 ? "#dc2626" : "#111827";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(30,y,780,alto);
+
+  ctx.fillStyle="#111827";
+  ctx.font="14px Arial";
+
+  let leyY = 210;
+  actividades.forEach((a,i)=>{
+    const lx = 40 + (i%2)*380;
+    const ly = leyY + Math.floor(i/2)*35;
+    ctx.fillStyle = a.color;
+    ctx.fillRect(lx,ly,18,18);
+    ctx.fillStyle="#111827";
+    ctx.fillText(a.nombre, lx+28, ly+14);
+  });
+
+  ctx.font="16px Arial";
+  if(total > 24){
+    ctx.fillStyle="#dc2626";
+    ctx.fillText("⚠ Tu plan usa más de 24 horas: no es factible.", 30, 330);
+  } else {
+    ctx.fillStyle="#16a34a";
+    ctx.fillText("✅ Tu plan respeta la restricción de 24 horas.", 30, 330);
+  }
+}
+
+actividades.forEach(a=>{
+  document.getElementById(a.id).addEventListener("input", calcular);
+});
+
+calcular();
+</script>
+</body>
+</html>
